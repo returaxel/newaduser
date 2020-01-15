@@ -11,17 +11,19 @@ param (
 # Error action
 $ErrorActionPreference = "Stop"
 
+# Optional 
+
 class USR {
     # User
-    [string]$domain
+    hidden [string]$domain
     [string]$surName
     [string]$givenName
-    [int]$uniqueDigits
-    [string]$displayName
+    hidden [int]$uniqueDigits
+    hidden [string]$displayName
     [string]$userName
     [string]$email
-    [string]$sAMA
-    [string]$upn
+    hidden [string]$sAMA
+    hidden [string]$upn
     [string]$pw
 
     USR([string]$domain, [string]$givenName, [string]$surName)
@@ -32,9 +34,9 @@ class USR {
         $this.uniqueDigits = (100..999) | Get-Random
         $this.displayName = $this.surName+', '+$this.givenName
         $this.userName = $this.givenName.Substring(0,2).ToLower()+$this.surName.Substring(0,2).ToLower()+$this.uniqueDigits
-        $this.email = $this.givenName+$this.surName+"@"+$this.domain
+        $this.email = '{0}{1}@{2}' -f $this.givenName, $this.surName, $this.domain
         $this.sAMA = $this.userName
-        $this.upn = $this.userName+'@'+$this.domain
+        $this.upn = '{0}@{1}' -f $this.userName, $this.domain
         $this.pw = 'Winter!'+$this.uniqueDigits
     }
 }
@@ -57,19 +59,19 @@ New-AdUser `
     -UserPrincipalName $usr.upn `
     -AccountPassword $pass `
     -HomeDrive $letter `
-    -HomeDirectory $dirPath `
+    -HomeDirectory $homeDir `
     -Enabled 1 `
-    -PassThru # To see info in console
+    -PassThru
 
 # Share
 $letter = "Z:"     # SKRIV VILKEN BOKSTAV DISKEN SKA VA MAPPAD PÅ
-$dirPath = 'C:\Users\'+$usr.userName  # BYT UT 'C:\Users\' MOT RÄTT SERVER
+$homeDir = 'C:\Users\'+$usr.userName  # BYT UT 'C:\Users\' MOT RÄTT SERVER
 
 # Create Share
-$homeDir = New-Item -path $dirPath -ItemType Directory -force
+$homeDir = New-Item -path $homeDir -ItemType Directory -force
 
 # Directory ACL
-$acl = Get-Acl $dirPath
+$acl = Get-Acl $homeDir
 
 # Directory permissions
 $fsRights = [System.Security.AccessControl.FileSystemRights]"Modify"
@@ -81,8 +83,8 @@ $Propagation = [System.Security.AccessControl.PropagationFlags]"InheritOnly"
 $aclRule = New-Object System.Security.AccessControl.FileSystemAccessRule ($usr.upn, $fsRights, $Inheritance, $Propagation, $aclType)
 $acl.AddAccessRule($aclRule)
 
-# Apply permission
-Set-Acl -Path $dirPath -AclObject $acl 
+# Apply homeDir access
+Set-Acl -Path $homeDir -AclObject $acl 
 
-# Export information
+# Export user information
 $usr | export-csv .\new-users.csv -Encoding UTF8 -Delimiter ";" -NoTypeInformation -Append -Force
