@@ -32,7 +32,7 @@ $domain = 'wsone.ad'
 # Export CSV path
 $CSV = '.\new-usr.csv'
 
-# Create share y/N
+# Create share & assign drive y/N
 [bool]$share = 0
 
 #-----------------------------------------------------------[Classes]--------------------------------------------------------------
