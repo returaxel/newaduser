@@ -12,7 +12,6 @@
     Output
 .NOTES
     Users are created in the default user ou unless specified
-
 #>
 
 #---------------------------------------------------------[Initialisations]--------------------------------------------------------
@@ -58,7 +57,7 @@ class USR {
         $this.uniqueDigits = (100..999) | Get-Random
         $this.displayName = $this.surName+', '+$this.givenName
         $this.userName = $this.givenName.Substring(0,2).ToLower()+$this.surName.Substring(0,2).ToLower()+$this.uniqueDigits
-        $this.email = '{0}{1}@{2}' -f $this.givenName, $this.surName, $this.domain
+        $this.email = '{0}.{1}@{2}' -f $this.givenName, $this.surName, $this.domain
         $this.sAMA = $this.userName
         $this.upn = '{0}@{1}' -f $this.userName, $this.domain
         $this.pw = 'Winter!'+$this.uniqueDigits
@@ -118,5 +117,4 @@ if ($share -eq $true) {
 
 #-----------------------------------------------------------[Export-CSV]-----------------------------------------------------------
 
-# Export user information
 $usr | export-csv $CSV -Encoding UTF8 -Delimiter ";" -NoTypeInformation -Append -Force
