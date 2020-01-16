@@ -1,15 +1,15 @@
 <#
 .SYNOPSIS
-    Short description
+    Srt dscrpsn
 .DESCRIPTION
     Long description
 .EXAMPLE
     > .\newaduser.ps1 (domain) givenname surname
     Will create a user with gisu and three random digits, ex, gisu666
 .INPUTS
-    Inputs
+    Inputs givenName, surName
 .OUTPUTS
-    Output
+    Output created users in CSV
 .NOTES
     Users are created in the default user ou unless specified
 #>
