@@ -11,15 +11,14 @@
 .OUTPUTS
     Output
 .NOTES
-    By default users are created in the default user ou
+    Users are created in the default user ou unless specified
+
 #>
 
 #---------------------------------------------------------[Initialisations]--------------------------------------------------------
 
 [CmdletBinding()]
 param (
-    # [Parameter(Mandatory=$true)]
-    # [string]$domain,
     [Parameter(Mandatory=$true)]
     [string]$givenName,
     [Parameter(Mandatory=$true)]
@@ -28,8 +27,11 @@ param (
 
 $ErrorActionPreference = "Stop"
 
-# Static domain 
+# Domain 
 $domain = 'wsone.ad'
+
+# Export CSV path
+$CSV = '.\new-usr.csv'
 
 # Create share y/N
 [bool]$share = 0
@@ -37,7 +39,6 @@ $domain = 'wsone.ad'
 #-----------------------------------------------------------[Classes]--------------------------------------------------------------
 
 class USR {
-    # User
     hidden [string]$domain
     [string]$surName
     [string]$givenName
@@ -66,8 +67,6 @@ class USR {
 
 #-----------------------------------------------------------[Create-User]----------------------------------------------------------
 
-
-
 # Create new object USR 
 $usr =[USR]::new($domain, $givenName, $surName)
 
@@ -93,33 +92,31 @@ New-AdUser `
 #-----------------------------------------------------------[Create-Share]---------------------------------------------------------
 
 if ($share -eq $true) {
-    
-# Share
-$letter = "Z:"     
-$homeDir = 'C:\Users\'+$usr.userName  
+    # Share settings
+    $letter = "Z:"                          # EDIT ME
+    $homeDir = 'C:\Users\'+$usr.userName    # EDIT ME
 
-# Create Share
-$homeDir = New-Item -path $homeDir -ItemType Directory -force
+    # Create Share
+    $homeDir = New-Item -path $homeDir -ItemType Directory -force
 
-# Directory ACL
-$acl = Get-Acl $homeDir
+    # Directory ACL
+    $acl = Get-Acl $homeDir
 
-# Directory permissions
-$fsRights = [System.Security.AccessControl.FileSystemRights]"Modify"
-$aclType = [System.Security.AccessControl.AccessControlType]::Allow
-$Inheritance = [System.Security.AccessControl.InheritanceFlags]"ContainerInherit, ObjectInherit"
-$Propagation = [System.Security.AccessControl.PropagationFlags]"InheritOnly"
+    # Directory permissions
+    $fsRights = [System.Security.AccessControl.FileSystemRights]"Modify"
+    $aclType = [System.Security.AccessControl.AccessControlType]::Allow
+    $Inheritance = [System.Security.AccessControl.InheritanceFlags]"ContainerInherit, ObjectInherit"
+    $Propagation = [System.Security.AccessControl.PropagationFlags]"InheritOnly"
 
-# Directory rules 
-$aclRule = New-Object System.Security.AccessControl.FileSystemAccessRule ($usr.upn, $fsRights, $Inheritance, $Propagation, $aclType)
-$acl.AddAccessRule($aclRule)
+    # Directory rules 
+    $aclRule = New-Object System.Security.AccessControl.FileSystemAccessRule ($usr.upn, $fsRights, $Inheritance, $Propagation, $aclType)
+    $acl.AddAccessRule($aclRule)
 
-# Apply homeDir access
-Set-Acl -Path $homeDir -AclObject $acl 
-
+    # Apply homeDir access
+    Set-Acl -Path $homeDir -AclObject $acl 
 }
 
 #-----------------------------------------------------------[Export-CSV]-----------------------------------------------------------
 
 # Export user information
-$usr | export-csv .\new-users.csv -Encoding UTF8 -Delimiter ";" -NoTypeInformation -Append -Force
+$usr | export-csv $CSV -Encoding UTF8 -Delimiter ";" -NoTypeInformation -Append -Force
