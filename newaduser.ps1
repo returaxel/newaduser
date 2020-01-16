@@ -1,17 +1,40 @@
+<#
+.SYNOPSIS
+    Short description
+.DESCRIPTION
+    Long description
+.EXAMPLE
+    > .\newaduser.ps1 (domain) givenname surname
+    Will create a user with gisu and three random digits, ex, gisu666
+.INPUTS
+    Inputs
+.OUTPUTS
+    Output
+.NOTES
+    By default users are created in the default user ou
+#>
+
+#---------------------------------------------------------[Initialisations]--------------------------------------------------------
+
 [CmdletBinding()]
 param (
-    [Parameter(Mandatory=$true)]
-    [string]$domain,
+    # [Parameter(Mandatory=$true)]
+    # [string]$domain,
     [Parameter(Mandatory=$true)]
     [string]$givenName,
     [Parameter(Mandatory=$true)]
     [string]$surName
 )
 
-# Error action
 $ErrorActionPreference = "Stop"
 
-# Optional 
+# Static domain 
+$domain = 'wsone.ad'
+
+# Create share y/N
+[bool]$share = 0
+
+#-----------------------------------------------------------[Classes]--------------------------------------------------------------
 
 class USR {
     # User
@@ -28,9 +51,9 @@ class USR {
 
     USR([string]$domain, [string]$givenName, [string]$surName)
     {
-        $this.domain = $domain           # Set
-        $this.surName = $surName         # Set
-        $this.givenName = $givenName     # Set
+        $this.domain = $domain
+        $this.surName = $surName
+        $this.givenName = $givenName
         $this.uniqueDigits = (100..999) | Get-Random
         $this.displayName = $this.surName+', '+$this.givenName
         $this.userName = $this.givenName.Substring(0,2).ToLower()+$this.surName.Substring(0,2).ToLower()+$this.uniqueDigits
@@ -41,10 +64,14 @@ class USR {
     }
 }
 
-# USR 
+#-----------------------------------------------------------[Create-User]----------------------------------------------------------
+
+
+
+# Create new object USR 
 $usr =[USR]::new($domain, $givenName, $surName)
 
-# Set Password
+# Set a valid password param
 $pass = ConvertTo-SecureString $usr.pw -AsPlainText -Force
 
 # New AD-User
@@ -63,9 +90,13 @@ New-AdUser `
     -Enabled 1 `
     -PassThru
 
+#-----------------------------------------------------------[Create-Share]---------------------------------------------------------
+
+if ($share -eq $true) {
+    
 # Share
-$letter = "Z:"     # SKRIV VILKEN BOKSTAV DISKEN SKA VA MAPPAD PÅ
-$homeDir = 'C:\Users\'+$usr.userName  # BYT UT 'C:\Users\' MOT RÄTT SERVER
+$letter = "Z:"     
+$homeDir = 'C:\Users\'+$usr.userName  
 
 # Create Share
 $homeDir = New-Item -path $homeDir -ItemType Directory -force
@@ -85,6 +116,10 @@ $acl.AddAccessRule($aclRule)
 
 # Apply homeDir access
 Set-Acl -Path $homeDir -AclObject $acl 
+
+}
+
+#-----------------------------------------------------------[Export-CSV]-----------------------------------------------------------
 
 # Export user information
 $usr | export-csv .\new-users.csv -Encoding UTF8 -Delimiter ";" -NoTypeInformation -Append -Force
