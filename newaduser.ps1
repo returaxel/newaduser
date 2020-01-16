@@ -11,7 +11,7 @@
 .OUTPUTS
     Output created users in CSV
 .NOTES
-    Users are created in the default user ou unless specified
+    Users are created in the default user ou 
 #>
 
 #---------------------------------------------------------[Initialisations]--------------------------------------------------------
@@ -48,7 +48,7 @@ class USR {
     hidden  [string]$sAMA
     hidden  [string]$upn
     hidden  [string]$str 
-    hidden  [string]$pw
+            [string]$pw
 
     USR([string]$domain, [string]$givenName, [string]$surName)
     {
@@ -62,11 +62,11 @@ class USR {
         $this.sAMA = $this.userName
         $this.upn = '{0}@{1}' -f $this.userName, $this.domain
         $this.str = 'aAbBcDdEeFfGgHhIiJjKkLlmMnNoOpPqQrRsStTuUvVwWxXyYzZ' # String to scramble for password
-        $this.pw = ($this.str.ToCharArray() | Get-Random -Count 6) -join ''
+        $this.pw = '{0}{1}{2}!' -f $this.surName.Substring(0,1).ToUpper(), (($this.str.ToCharArray() | Get-Random -Count 6) -join '') ,$this.uniqueDigits
     }
     [string] GetPassword ()
     {
-        return '{0}{1}' -f $this.pw, $this.uniqueDigits
+        return $this.pw
     }
 }
 
@@ -76,6 +76,7 @@ class USR {
 $usr =[USR]::new($domain, $givenName, $surName)
 
 # Set password 
+$usr.GetPassword()
 $pass = ConvertTo-SecureString $usr.GetPassword() -AsPlainText -Force
 
 # New AD-User
