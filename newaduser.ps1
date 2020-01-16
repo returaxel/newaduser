@@ -38,17 +38,17 @@ $CSV = '.\new-usr.csv'
 #-----------------------------------------------------------[Classes]--------------------------------------------------------------
 
 class USR {
-    hidden [string]$domain
-    [string]$surName
-    [string]$givenName
-    hidden [int]$uniqueDigits
-    hidden [string]$displayName
-    [string]$userName
-    [string]$email
-    hidden [string]$sAMA
-    hidden [string]$upn
-    hidden [string]$str 
-    hidden [string]$pw
+    hidden  [string]$domain
+            [string]$surName
+            [string]$givenName
+    hidden  [int]$uniqueDigits
+    hidden  [string]$displayName
+            [string]$userName
+            [string]$email
+    hidden  [string]$sAMA
+    hidden  [string]$upn
+    hidden  [string]$str 
+    hidden  [string]$pw
 
     USR([string]$domain, [string]$givenName, [string]$surName)
     {
