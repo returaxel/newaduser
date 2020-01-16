@@ -47,20 +47,26 @@ class USR {
     [string]$email
     hidden [string]$sAMA
     hidden [string]$upn
-    [string]$pw
+    hidden [string]$str 
+    hidden [string]$pw
 
     USR([string]$domain, [string]$givenName, [string]$surName)
     {
         $this.domain = $domain
         $this.surName = $surName
         $this.givenName = $givenName
-        $this.uniqueDigits = (100..999) | Get-Random
+        $this.uniqueDigits = (100..999 | Get-Random)
         $this.displayName = $this.surName+', '+$this.givenName
-        $this.userName = $this.givenName.Substring(0,2).ToLower()+$this.surName.Substring(0,2).ToLower()+$this.uniqueDigits
+        $this.userName = '{0}{1}{2}' -f $this.givenName.Substring(0,2).ToLower(), $this.surName.Substring(0,2).ToLower(), $this.uniqueDigits
         $this.email = '{0}.{1}@{2}' -f $this.givenName, $this.surName, $this.domain
         $this.sAMA = $this.userName
         $this.upn = '{0}@{1}' -f $this.userName, $this.domain
-        $this.pw = 'Winter!'+$this.uniqueDigits
+        $this.str = 'aAbBcDdEeFfGgHhIiJjKkLlmMnNoOpPqQrRsStTuUvVwWxXyYzZ' # String to scramble for password
+        $this.pw = ($this.str.ToCharArray() | Get-Random -Count 6) -join ''
+    }
+    [string] GetPassword ()
+    {
+        return '{0}{1}' -f $this.pw, $this.uniqueDigits
     }
 }
 
@@ -69,8 +75,8 @@ class USR {
 # Create new object USR 
 $usr =[USR]::new($domain, $givenName, $surName)
 
-# Set a valid password param
-$pass = ConvertTo-SecureString $usr.pw -AsPlainText -Force
+# Set password 
+$pass = ConvertTo-SecureString $usr.GetPassword() -AsPlainText -Force
 
 # New AD-User
 New-AdUser `
