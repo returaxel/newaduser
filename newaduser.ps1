@@ -29,7 +29,7 @@ $ErrorActionPreference = "Stop"
 # Server
 $server = 'localhost'
 
-# Domain 
+# Domain suffix, name.surname@ $domain
 $domain = 'test.ad'
 
 # Export CSV path and filename
@@ -61,9 +61,15 @@ class USR {
         $this.givenName = $givenName
         $this.uniqueDigits = (100..999 | Get-Random)
         $this.displayName = $this.surName+', '+$this.givenName
-        $this.userName = ('{0}{1}{2}' -f $this.givenName.Substring(0,2).ToLower(), $this.surName.Substring(0,2).ToLower(), $this.uniqueDigits).Normalize("FormD") -replace '\p{M}'
+        $this.userName = ('{0}{1}{2}' -f `
+                            $this.givenName.Substring(0,2).ToLower(), `
+                            $this.surName.Substring(0,2).ToLower(), `
+                            $this.uniqueDigits).Normalize("FormD") -replace '\p{M}'
         $this.emailFormat =  "^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"
-        $this.email = ('{0}.{1}@{2}' -f $this.givenName, $this.surName.Replace(' ', ''), $this.domain).Normalize("FormD") -replace '\p{M}'  
+        $this.email = ('{0}.{1}@{2}' -f `
+                            $this.givenName, `
+                            $this.surName.Replace(' ', ''), `
+                            $this.domain).Normalize("FormD") -replace '\p{M}'  
         $this.sAMA = $this.userName.Normalize("FormD") -replace '\p{M}'
         $this.upn = ('{0}@{1}' -f $this.userName, $this.domain).Normalize("FormD") -replace '\p{M}'
         $this.str = -join ((65..90) + (97..122) | Get-Random -Count 6 | % {[char]$_}) # Pw string gen
