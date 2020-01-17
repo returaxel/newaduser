@@ -44,47 +44,55 @@ class USR {
     hidden  [string]$domain
             [string]$surName
             [string]$givenName
-    hidden  [int]$uniqueDigits
     hidden  [string]$displayName
             [string]$userName
-    hidden  [string]$emailFormat
             [string]$email
     hidden  [string]$sAMA
     hidden  [string]$upn
-    hidden  [string]$str 
             [string]$pw
-
-    USR([string]$domain, [string]$givenName, [string]$surName)
-    {
-        $this.domain = $domain
-        $this.surName = $surName
-        $this.givenName = $givenName
-        $this.uniqueDigits = (100..999 | Get-Random)
-        $this.displayName = $this.surName+', '+$this.givenName
-        $this.userName = ('{0}{1}{2}' -f `
-                            $this.givenName.Substring(0,2).ToLower(), `
-                            $this.surName.Substring(0,2).ToLower(), `
-                            $this.uniqueDigits).Normalize("FormD") -replace '\p{M}'
-        $this.emailFormat =  "^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"
-        $this.email = ('{0}.{1}@{2}' -f `
-                            $this.givenName, `
-                            $this.surName.Replace(' ', ''), `
-                            $this.domain).Normalize("FormD") -replace '\p{M}'  
-        $this.sAMA = $this.userName.Normalize("FormD") -replace '\p{M}'
-        $this.upn = ('{0}@{1}' -f $this.userName, $this.domain).Normalize("FormD") -replace '\p{M}'
-        $this.str = -join ((65..90) + (97..122) | Get-Random -Count 6 | % {[char]$_}) # Pw string gen
-        $this.pw = '{0}{1}{2}!' -f $this.surName.Substring(0,1).ToUpper(), $this.str, $this.uniqueDigits
-    }
-    [string] GetPassword ()
-    {
-        return $this.pw
-    }
-    [string] GetEmail ()
-    {
-        if ($this.email -match $this.emailFormat){ 
-            return $this.email #.Normalize("FormD") -replace '\p{M}'
+    
+        USR([string]$domain, [string]$givenName, [string]$surName)
+        {
+            $this.domain = $domain
+            $this.surName = $surName
+            $this.givenName = $givenName
+            $this.displayName = $this.surName+', '+$this.givenName
+            $this.userName = $this.SetUsr()
+            $this.email = $this.SetEmail()
+            $this.sAMA = $this.userName.Normalize("FormD") -replace '\p{M}'
+            $this.upn = ('{0}@{1}' -f $this.userName, $this.domain).Normalize("FormD") -replace '\p{M}'
+            $this.pw = $this.SetPwd()
         }
-            Throw "Error: Email format is not a-okay, user"+' '+$this.displayName
+    hidden  [string] SetUsr ()
+        {
+            [int]$usrInt = (100..999 | Get-Random) # Add 3 digits to end of username
+            [string]$SetUsr = '{0}{1}{2}' -f `
+                $this.givenName.Substring(0,2).ToLower(), `
+                $this.surName.Substring(0,2).ToLower(), `
+                $usrInt
+            return $SetUsr.Normalize("FormD") -replace '\p{M}'
+        }
+    hidden  [string] SetPwd ()
+        {
+            [string]$pwStr = -join ((65..90) + (97..122) | Get-Random -Count 6 | ForEach-Object {[char]$_})
+            [int]$pwint = 1..99 | Get-Random 
+            [string]$setPw = '{0}{1}{2}!' -f `
+                $pwStr.Substring(0,1).ToUpper(), `
+                $pwStr, `
+                $pwInt
+            return $setPw
+        }
+    hidden [string] SetEmail ()
+        {
+            $charCHK = "^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"
+            $setEmail = ('{0}.{1}@{2}' -f `
+                $this.givenName, `
+                $this.surName.Replace(' ', ''), `
+                $this.domain).Normalize("FormD") -replace '\p{M}'
+            if ($setEmail -match $charCHK){ 
+                return $setEmail
+            }
+            Throw "Error: Email format is not a-okay, user"+' '+$setEmail
         }     
     }
 
@@ -94,7 +102,7 @@ class USR {
 $usr =[USR]::new($domain, $givenName, $surName)
 
 # Set password 
-$pass = ConvertTo-SecureString $usr.GetPassword() -AsPlainText -Force
+$pass = ConvertTo-SecureString $usr.pw -AsPlainText -Force
 
 # New AD-User
 New-AdUser `
@@ -104,7 +112,7 @@ New-AdUser `
     -DisplayName $usr.displayName `
     -sAMAccountName $usr.sAMA `
     -name $usr.userName `
-    -EmailAddress $usr.GetEmail() `
+    -EmailAddress $usr.email `
     -UserPrincipalName $usr.upn `
     -AccountPassword $pass `
     -HomeDrive $letter `
