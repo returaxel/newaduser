@@ -30,9 +30,9 @@ $ErrorActionPreference = "Stop"
 $server = 'localhost'
 
 # Domain 
-$domain = 'wsone.ad'
+$domain = 'test.ad'
 
-# Export CSV path
+# Export CSV path and filename
 $CSV = '.\new-usr.csv'
 
 # Create share & assign drive y/N
@@ -57,13 +57,13 @@ class USR {
     USR([string]$domain, [string]$givenName, [string]$surName)
     {
         $this.domain = $domain
-        $this.surName = $surName.Replace(' ', '-')
+        $this.surName = $surName
         $this.givenName = $givenName
         $this.uniqueDigits = (100..999 | Get-Random)
         $this.displayName = $this.surName+', '+$this.givenName
-        $this.userName = '{0}{1}{2}' -f $this.givenName.Substring(0,2).ToLower(), $this.surName.Substring(0,2).ToLower(), $this.uniqueDigits
+        $this.userName = ('{0}{1}{2}' -f $this.givenName.Substring(0,2).ToLower(), $this.surName.Substring(0,2).ToLower(), $this.uniqueDigits).Normalize("FormD") -replace '\p{M}'
         $this.emailFormat =  "^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"
-        $this.email = ('{0}.{1}@{2}' -f $this.givenName, $this.surName, $this.domain).Normalize("FormD") -replace '\p{M}'  
+        $this.email = ('{0}.{1}@{2}' -f $this.givenName, $this.surName.Replace(' ', ''), $this.domain).Normalize("FormD") -replace '\p{M}'  
         $this.sAMA = $this.userName.Normalize("FormD") -replace '\p{M}'
         $this.upn = ('{0}@{1}' -f $this.userName, $this.domain).Normalize("FormD") -replace '\p{M}'
         $this.str = -join ((65..90) + (97..122) | Get-Random -Count 6 | % {[char]$_}) # Pw string gen
