@@ -51,7 +51,7 @@ class USR {
     hidden  [string]$upn
             [string]$pw
     
-        USR([string]$domain, [string]$givenName, [string]$surName)
+    USR([string]$domain, [string]$givenName, [string]$surName)
         {
             $this.domain = $domain
             $this.surName = $surName
@@ -89,7 +89,8 @@ class USR {
                 $this.givenName, `
                 $this.surName.Replace(' ', ''), `
                 $this.domain).Normalize("FormD") -replace '\p{M}'
-            if ($setEmail -match $charCHK){ 
+            if ($setEmail -match $charCHK)
+            { 
                 return $setEmail
             }
             Throw "Error: Email format is not a-okay, user"+' '+$setEmail
