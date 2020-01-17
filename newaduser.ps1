@@ -26,6 +26,9 @@ param (
 
 $ErrorActionPreference = "Stop"
 
+# Server
+$server = 'localhost'
+
 # Domain 
 $domain = 'wsone.ad'
 
@@ -44,6 +47,7 @@ class USR {
     hidden  [int]$uniqueDigits
     hidden  [string]$displayName
             [string]$userName
+    hidden  [string]$emailFormat
             [string]$email
     hidden  [string]$sAMA
     hidden  [string]$upn
@@ -53,22 +57,30 @@ class USR {
     USR([string]$domain, [string]$givenName, [string]$surName)
     {
         $this.domain = $domain
-        $this.surName = $surName
+        $this.surName = $surName.Replace(' ', '-')
         $this.givenName = $givenName
         $this.uniqueDigits = (100..999 | Get-Random)
         $this.displayName = $this.surName+', '+$this.givenName
         $this.userName = '{0}{1}{2}' -f $this.givenName.Substring(0,2).ToLower(), $this.surName.Substring(0,2).ToLower(), $this.uniqueDigits
-        $this.email = '{0}.{1}@{2}' -f $this.givenName, $this.surName, $this.domain
-        $this.sAMA = $this.userName
-        $this.upn = '{0}@{1}' -f $this.userName, $this.domain
-        $this.str = 'aAbBcDdEeFfGgHhIiJjKkLlmMnNoOpPqQrRsStTuUvVwWxXyYzZ' # String to scramble for password
-        $this.pw = '{0}{1}{2}!' -f $this.surName.Substring(0,1).ToUpper(), (($this.str.ToCharArray() | Get-Random -Count 6) -join '') ,$this.uniqueDigits
+        $this.emailFormat =  "^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"
+        $this.email = ('{0}.{1}@{2}' -f $this.givenName, $this.surName, $this.domain).Normalize("FormD") -replace '\p{M}'  
+        $this.sAMA = $this.userName.Normalize("FormD") -replace '\p{M}'
+        $this.upn = ('{0}@{1}' -f $this.userName, $this.domain).Normalize("FormD") -replace '\p{M}'
+        $this.str = -join ((65..90) + (97..122) | Get-Random -Count 6 | % {[char]$_}) # Pw string gen
+        $this.pw = '{0}{1}{2}!' -f $this.surName.Substring(0,1).ToUpper(), $this.str, $this.uniqueDigits
     }
     [string] GetPassword ()
     {
         return $this.pw
     }
-}
+    [string] GetEmail ()
+    {
+        if ($this.email -match $this.emailFormat){ 
+            return $this.email #.Normalize("FormD") -replace '\p{M}'
+        }
+            Throw "Error: Email format is not a-okay, user"+' '+$this.displayName
+        }     
+    }
 
 #-----------------------------------------------------------[Create-User]----------------------------------------------------------
 
@@ -76,18 +88,17 @@ class USR {
 $usr =[USR]::new($domain, $givenName, $surName)
 
 # Set password 
-$usr.GetPassword()
 $pass = ConvertTo-SecureString $usr.GetPassword() -AsPlainText -Force
 
 # New AD-User
 New-AdUser `
-    -server localhost `
+    -server $server `
     -givenName $usr.givenName `
     -surName $usr.surName `
     -DisplayName $usr.displayName `
     -sAMAccountName $usr.sAMA `
     -name $usr.userName `
-    -EmailAddress $usr.email `
+    -EmailAddress $usr.GetEmail() `
     -UserPrincipalName $usr.upn `
     -AccountPassword $pass `
     -HomeDrive $letter `
