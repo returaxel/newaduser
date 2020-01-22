@@ -74,8 +74,8 @@ class USR {
         }
     hidden  [string] SetPwd ()
         {
-            [string]$pwStr = -join ((65..90) + (97..122) | Get-Random -Count 6 | ForEach-Object {[char]$_})
             [int]$pwint = 1..99 | Get-Random 
+            [string]$pwStr = -join ((65..90) + (97..122) | Get-Random -Count 6 | ForEach-Object {[char]$_})
             [string]$setPw = '{0}{1}{2}!' -f `
                 $pwStr.Substring(0,1).ToUpper(), `
                 $pwStr, `
@@ -123,10 +123,11 @@ New-AdUser `
 
 #-----------------------------------------------------------[Create-Share]---------------------------------------------------------
 
-if ($share -eq $true) {
+if ($true -eq $share) {
     # Share settings
     $letter = "Z:"                          # EDIT ME
     $homeDir = 'C:\Users\'+$usr.userName    # EDIT ME
+    Write-Output 'Creating share:' $homeDir
 
     # Create Share
     $homeDir = New-Item -path $homeDir -ItemType Directory -force
