@@ -9,13 +9,12 @@
 .INPUTS
     Inputs givenName, surName
 .OUTPUTS
-    Output created users in CSV
+    Exports CSV with account information
 .NOTES
     Users are created in the default user ou 
 #>
 
-#---------------------------------------------------------[Initialisations]--------------------------------------------------------
-
+## ------ [Initialisations] ------
 [CmdletBinding()]
 param (
     [Parameter(Mandatory=$true)]
@@ -38,8 +37,7 @@ $CSV = '.\new-usr.csv'
 # Create share & assign drive y/N
 [bool]$share = 0
 
-#-----------------------------------------------------------[Classes]--------------------------------------------------------------
-
+## ------ [Classes] ------
 class USR {
     hidden  [string]$domain
             [string]$surName
@@ -97,32 +95,34 @@ class USR {
         }     
     }
 
-#-----------------------------------------------------------[Create-User]----------------------------------------------------------
-
+## ------ [Create user] ------
 # Create new object USR 
 $usr =[USR]::new($domain, $givenName, $surName)
 
 # Set password 
 $pass = ConvertTo-SecureString $usr.pw -AsPlainText -Force
 
+# Hashtable of user parameters
+$userParam = @{
+    'server'            = $server
+    'givenName'         = $usr.givenName
+    'surName'           = $usr.surName
+    'displayName'       = $usr.displayName
+    'sAMAccountName'    = $usr.sAma
+    'name'              = $usr.userName
+    'emailAddress'      = $usr.email
+    'userPrincipalName' = $usr.upn
+    'accountPassword'   = $pass
+    'homeDrive'         = $letter
+    'homeDirectory'     = $homedir
+    'enabled'           = '1'
+    'passthru'          = $true
+}
+
 # New AD-User
-New-AdUser `
-    -server $server `
-    -givenName $usr.givenName `
-    -surName $usr.surName `
-    -DisplayName $usr.displayName `
-    -sAMAccountName $usr.sAMA `
-    -name $usr.userName `
-    -EmailAddress $usr.email `
-    -UserPrincipalName $usr.upn `
-    -AccountPassword $pass `
-    -HomeDrive $letter `
-    -HomeDirectory $homeDir `
-    -Enabled 1 `
-    -PassThru
+New-AdUser @userParam -PassThru
 
-#-----------------------------------------------------------[Create-Share]---------------------------------------------------------
-
+## ------ [Create share] ------
 if ($true -eq $share) {
     # Share settings
     $letter = "Z:"                          # EDIT ME
@@ -149,6 +149,5 @@ if ($true -eq $share) {
     Set-Acl -Path $homeDir -AclObject $acl 
 }
 
-#-----------------------------------------------------------[Export-CSV]-----------------------------------------------------------
-
+## ------ [Export CSV] ------
 $usr | export-csv $CSV -Encoding UTF8 -Delimiter ";" -NoTypeInformation -Append -Force
