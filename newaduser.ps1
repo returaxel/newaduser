@@ -65,8 +65,8 @@ class USR {
         }
     hidden  [string] SetUsr ()
         {
-            [int]$usrInt = (100..999 | Get-Random) # Add 3 digits to end of username
-            [string]$SetUsr = '{0}{1}{2}' -f `
+        [int]   $usrInt = (100..999 | Get-Random) # Add 3 digits to end of username
+        [string]$SetUsr = '{0}{1}{2}' -f `
                 $this.givenName.Substring(0,2).ToLower(), `
                 $this.surName.Substring(0,2).ToLower(), `
                 $usrInt
@@ -74,9 +74,9 @@ class USR {
         }
     hidden  [string] SetPwd ()
         {
-            [int]$pwint = 1..99 | Get-Random 
-            [string]$pwStr = -join ((65..90) + (97..122) | Get-Random -Count 6 | ForEach-Object {[char]$_})
-            [string]$setPw = '{0}{1}{2}!' -f `
+        [int]   $pwint = 1..99 | Get-Random 
+        [string]$pwStr = -join ((65..90) + (97..122) | Get-Random -Count 6 | ForEach-Object {[char]$_})
+        [string]$setPw = '{0}{1}{2}!' -f `
                 $pwStr.Substring(0,1).ToUpper(), `
                 $pwStr, `
                 $pwInt
