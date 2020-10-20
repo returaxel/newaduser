@@ -1,6 +1,6 @@
 ## Disclaimer
 
-SCRIPT PROVIDED AS IS 
+use at your own risk
 
 ## Example of randomized batch user creation
 
