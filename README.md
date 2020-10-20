@@ -1,11 +1,6 @@
-**SCRIPT PROVIDED AS, IS NO WARRANTY**
+## Disclaimer
 
-# winsrv-new-aduser
-
-### Create New-AdUser with minimal effort(?)
-
-
-
+SCRIPT PROVIDED AS IS 
 
 ## Example of randomized batch user creation
 
