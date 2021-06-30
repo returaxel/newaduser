@@ -1,8 +1,6 @@
-## Disclaimer
-
-use at your own risk
-
 ## Example of randomized batch user creation
+
+It ain't much but it's honest work.
 
 ```PS
 # Import CSV with givenName + surName as headers 
