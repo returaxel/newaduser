@@ -5,9 +5,11 @@
     - Enter... given name
 .PARAMETER surName
     - Enter... surname
+.PARAMETER share
+    - Switch: Create share & assign drive letter
 .EXAMPLE
-    - > .\newaduser.ps1 Anders Andersson 
-    - Will create a user with samaccountname <anan> and three random digits, ie <anan123>
+    - > .\newaduser.ps1 -givenName Anders -surName Andersson
+    - Will create a user samaccountname something like: anan222
     - Saves account information to CSV
 .NOTES
     - Users are created in the default user ou!!!
@@ -21,7 +23,9 @@ param (
     [Parameter(Mandatory=$true)]
     [string]$givenName,
     [Parameter(Mandatory=$true)]
-    [string]$surName
+    [string]$surName,
+    [Parameter(Mandatory=$false)]
+    [switch]$share
 )
 
 $ErrorActionPreference = "Stop"
@@ -34,9 +38,6 @@ $domain = 'test.ad'
 
 # Export CSV path and filename
 $CSV = '.\new-usr.csv'
-
-# Create share & assign drive y/N
-[bool]$share = 0
 
 ## ------ [Classes] ------
 class USR {
@@ -124,7 +125,7 @@ $userParam = @{
 New-AdUser @userParam -PassThru
 
 ## ------ [Create share] ------
-if ($true -eq $share) {
+if ($share) {
     # Share settings
     $letter = "Z:"                          # EDIT ME
     $homeDir = 'C:\Users\'+$usr.userName    # EDIT ME
