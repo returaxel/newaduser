@@ -1,17 +1,18 @@
 <#
-.SYNOPSIS
-    Srt dscrpsn
 .DESCRIPTION
-    Long description
+    - Written to learn more about PowerShell and create test accounts for a lab
+.PARAMETER givenName
+    - Enter... given name
+.PARAMETER surName
+    - Enter... surname
 .EXAMPLE
-    > .\newaduser.ps1 (domain) givenname surname
-    Will create a user with gisu and three random digits, ex, gisu666
-.INPUTS
-    Inputs givenName, surName
-.OUTPUTS
-    Exports CSV with account information
+    - > .\newaduser.ps1 Anders Andersson 
+    - Will create a user with samaccountname <anan> and three random digits, ie <anan123>
+    - Saves account information to CSV
 .NOTES
-    Users are created in the default user ou 
+    - Users are created in the default user ou!!!
+    - Don't forget to edit: $server, $domain and $csv
+    - Information edited 2021-06-30
 #>
 
 ## ------ [Initialisations] ------
